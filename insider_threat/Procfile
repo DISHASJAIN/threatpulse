@@ -1,2 +1,2 @@
-web: gunicorn insider_threat.wsgi --bind 0.0.0.0:$PORT
+web: python manage.py migrate && gunicorn insider_threat.wsgi --bind 0.0.0.0:$PORT
 worker: celery -A insider_threat worker --loglevel=info
