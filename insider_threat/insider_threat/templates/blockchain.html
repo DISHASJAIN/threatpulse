@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% block title %}Blockchain Audit{% endblock %}
+{% block page_title %}Blockchain Audit Log{% endblock %}
+{% block page_badge %}IMMUTABLE{% endblock %}
+{% block nav_blockchain %}active{% endblock %}
+
+{% block extra_style %}
+<style>
+  /* Top stats */
+  .chain-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .chain-card {
+    background: rgba(4,11,22,0.9);
+    border-radius: 14px;
+    padding: 18px 22px;
+    border: 1px solid rgba(0,255,200,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .chain-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, #00c896, #0096ff);
+  }
+  .chain-card .label {
+    font-size: 9px;
+    color: #1e3a5f;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  .chain-card .value {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 8px;
+    color: #00ffc8;
+    letter-spacing: -1px;
+  }
+  .chain-card .sub {
+    font-size: 11px;
+    color: #1e3a5f;
+    margin-top: 4px;
+  }
+
+  /* Chain status banner */
+  .chain-status {
+    border-radius: 12px;
+    padding: 16px 22px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid;
+  }
+  .chain-status.ok {
+    background: rgba(0,255,200,0.04);
+    border-color: rgba(0,255,200,0.15);
+  }
+  .chain-status.warn {
+    background: rgba(239,68,68,0.04);
+    border-color: rgba(239,68,68,0.15);
+  }
+  .status-icon {
+    font-size: 28px;
+  }
+  .status-text h3 {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .chain-status.ok  .status-text h3 { color: #00ffc8; }
+  .chain-status.warn .status-text h3 { color: #f87171; }
+  .status-text p {
+    font-size: 12px;
+    color: #334155;
+    margin-top: 3px;
+  }
+
+  /* Build button */
+  .action-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+  .build-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, #00c896, #0096ff);
+    color: #020d1a;
+    border: none;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 0 20px rgba(0,200,150,0.2);
+    transition: opacity 0.2s;
+  }
+  .build-btn:hover { opacity: 0.85; }
+  .action-note {
+    font-size: 12px;
+    color: #1e3a5f;
+  }
+
+  /* Hash chain visual */
+  .chain-visual {
+    background: rgba(4,11,22,0.9);
+    border-radius: 14px;
+    border: 1px solid rgba(0,255,200,0.06);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .chain-visual-title {
+    font-size: 9px;
+    color: #1e3a5f;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chain-visual-title::before {
+    content: '';
+    width: 2px; height: 11px;
+    background: #00ffc8;
+    border-radius: 2px;
+    box-shadow: 0 0 6px #00ffc8;
+  }
+  .chain-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+  .chain-block {
+    background: rgba(0,255,200,0.04);
+    border: 1px solid rgba(0,255,200,0.12);
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 160px;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+  }
+  .chain-block:hover { border-color: rgba(0,255,200,0.3); }
+  .chain-block.tampered {
+    border-color: rgba(239,68,68,0.3);
+    background: rgba(239,68,68,0.04);
+  }
+  .block-id {
+    font-size: 10px;
+    color: #00ffc8;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .block-hash {
+    font-family: monospace;
+    font-size: 9px;
+    color: #1e3a5f;
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .block-hash span { color: #2d4a6b; }
+  .block-status {
+    margin-top: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .block-status.ok { color: #00ffc8; }
+  .block-status.bad { color: #f87171; }
+
+  .chain-arrow {
+    font-size: 16px;
+    color: #1e3a5f;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+
+  /* Full table */
+  .table-card {
+    background: rgba(4,11,22,0.9);
+    border-radius: 14px;
+    border: 1px solid rgba(0,255,200,0.06);
+    overflow: hidden;
+  }
+  .table-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(0,255,200,0.06);
+    font-size: 9px;
+    color: #1e3a5f;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .table-header::before {
+    content: '';
+    width: 2px; height: 11px;
+    background: #00ffc8;
+    border-radius: 2px;
+    box-shadow: 0 0 6px #00ffc8;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    padding: 10px 16px;
+    color: #1a2d4a;
+    font-weight: 600;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(0,0,0,0.3);
+  }
+  td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #050e1f;
+    font-size: 11px;
+    color: #4a6080;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(0,255,200,0.02); }
+
+  .hash-text {
+    font-family: monospace;
+    font-size: 10px;
+    color: #1e3a5f;
+  }
+  .hash-text.full { color: #2d4a6b; }
+
+  .verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0,255,200,0.08);
+    border: 1px solid rgba(0,255,200,0.15);
+    color: #00ffc8;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+  }
+  .tampered-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #f87171;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stats -->
+<div class="chain-stats">
+  <div class="chain-card">
+    <div class="label">Total Logs</div>
+    <div class="value">{{ total_logs }}</div>
+    <div class="sub">In database</div>
+  </div>
+  <div class="chain-card">
+    <div class="label">Hashed Logs</div>
+    <div class="value">{{ hashed_logs }}</div>
+    <div class="sub">In chain</div>
+  </div>
+  <div class="chain-card">
+    <div class="label">Verified</div>
+    <div class="value" style="color:#00ffc8">{{ verified_count }}</div>
+    <div class="sub">Sample of 20</div>
+  </div>
+  <div class="chain-card">
+    <div class="label">Tampered</div>
+    <div class="value" style="color:{% if tampered_count > 0 %}#f87171{% else %}#00ffc8{% endif %}">
+      {{ tampered_count }}
+    </div>
+    <div class="sub">Integrity violations</div>
+  </div>
+</div>
+
+<!-- Chain status banner -->
+{% if chain_complete and tampered_count == 0 %}
+<div class="chain-status ok">
+  <div class="status-icon">🔗</div>
+  <div class="status-text">
+    <h3>✓ Blockchain Integrity Verified</h3>
+    <p>All {{ hashed_logs }} log entries are cryptographically linked and unmodified. Hash chain is intact.</p>
+  </div>
+</div>
+{% elif not chain_complete %}
+<div class="chain-status warn">
+  <div class="status-icon">⚠</div>
+  <div class="status-text">
+    <h3>Chain Incomplete — Build Required</h3>
+    <p>{{ hashed_logs }} of {{ total_logs }} logs have been hashed. Click "Build Hash Chain" to hash all logs.</p>
+  </div>
+</div>
+{% else %}
+<div class="chain-status warn">
+  <div class="status-icon">🚨</div>
+  <div class="status-text">
+    <h3>Integrity Violation Detected!</h3>
+    <p>{{ tampered_count }} log entries failed hash verification. Possible tampering detected.</p>
+  </div>
+</div>
+{% endif %}
+
+<!-- Action bar -->
+<div class="action-bar">
+  <form method="POST" action="/blockchain/">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="build"/>
+    <button type="submit" class="build-btn">
+      🔗 Build Hash Chain
+    </button>
+  </form>
+  <span class="action-note">
+    Computes SHA-256 hash for all {{ total_logs }} logs and links them in a chain
+  </span>
+</div>
+
+<!-- Visual chain blocks -->
+{% if results %}
+<div class="chain-visual">
+  <div class="chain-visual-title">Hash Chain Visualization — First 20 Blocks</div>
+  <div class="chain-flow">
+    {% for r in results %}
+    <div class="chain-block {% if not r.is_valid %}tampered{% endif %}">
+      <div class="block-id">Block #{{ r.id }}</div>
+      <div class="block-hash">
+        Hash:<br/>
+        <span>{{ r.log_hash|slice:":16" }}...</span>
+      </div>
+      <div class="block-hash" style="margin-top:4px">
+        Prev:<br/>
+        <span>{{ r.prev_hash|slice:":16" }}...</span>
+      </div>
+      <div class="block-status {% if r.is_valid %}ok{% else %}bad{% endif %}">
+        {% if r.is_valid %}✓ VERIFIED{% else %}✗ TAMPERED{% endif %}
+      </div>
+    </div>
+    {% if not forloop.last %}
+    <div class="chain-arrow">→</div>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Full verification table -->
+<div class="table-card">
+  <div class="table-header">Log Integrity Verification — Sample of 20</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Log ID</th>
+        <th>Timestamp</th>
+        <th>Source IP</th>
+        <th>Attack Type</th>
+        <th>SHA-256 Hash</th>
+        <th>Prev Hash</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in results %}
+      <tr>
+        <td style="color:#00ffc8;font-weight:600">#{{ r.id }}</td>
+        <td>{{ r.timestamp|date:"M d, H:i:s" }}</td>
+        <td style="font-family:monospace;font-size:10px;color:#94a3b8">{{ r.source_ip }}</td>
+        <td>{{ r.attack_type|default:"—" }}</td>
+        <td>
+          <span class="hash-text full">{{ r.log_hash|slice:":24" }}...</span>
+        </td>
+        <td>
+          <span class="hash-text">{{ r.prev_hash|slice:":16" }}...</span>
+        </td>
+        <td>
+          {% if r.is_valid %}
+            <span class="verified-badge">✓ VERIFIED</span>
+          {% else %}
+            <span class="tampered-badge">✗ TAMPERED</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

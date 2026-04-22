@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}User Risk Scores{% endblock %}
+{% block page_title %}User Risk Scoring{% endblock %}
+{% block page_badge %}AI ANALYSIS{% endblock %}
+{% block nav_risk %}active{% endblock %}
+
+{% block extra_style %}
+<style>
+  .risk-stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .risk-stat {
+    background: #0B1120;
+    border-radius: 14px;
+    padding: 18px 22px;
+    border: 1px solid #1a2744;
+    position: relative;
+    overflow: hidden;
+  }
+  .risk-stat::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .risk-stat.critical::before { background: linear-gradient(90deg,#7c3aed,#ec4899); }
+  .risk-stat.high::before     { background: linear-gradient(90deg,#ef4444,#f97316); }
+  .risk-stat.medium::before   { background: linear-gradient(90deg,#f59e0b,#eab308); }
+  .risk-stat.low::before      { background: linear-gradient(90deg,#22c55e,#10b981); }
+
+  .risk-stat .label {
+    font-size: 10px;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+  }
+  .risk-stat .value {
+    font-size: 30px;
+    font-weight: 700;
+    margin-top: 8px;
+    letter-spacing: -1px;
+  }
+  .risk-stat.critical .value { color: #c4b5fd; }
+  .risk-stat.high .value     { color: #fca5a5; }
+  .risk-stat.medium .value   { color: #fcd34d; }
+  .risk-stat.low .value      { color: #86efac; }
+
+  .table-card {
+    background: #0B1120;
+    border-radius: 14px;
+    border: 1px solid #1a2744;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #1a2744;
+    font-size: 10px;
+    color: #334155;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-header::before {
+    content: '';
+    width: 3px; height: 12px;
+    background: #f87171;
+    border-radius: 2px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    padding: 11px 18px;
+    color: #1e3a5f;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    background: #060B18;
+  }
+  td {
+    padding: 13px 18px;
+    border-bottom: 1px solid #0d1728;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.03); }
+
+  .risk-bar-bg {
+    width: 120px;
+    background: #1a2744;
+    border-radius: 4px;
+    height: 5px;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .risk-bar {
+    height: 5px;
+    border-radius: 4px;
+  }
+  .risk-bar.Critical { background: linear-gradient(90deg,#7c3aed,#ec4899); }
+  .risk-bar.High     { background: linear-gradient(90deg,#ef4444,#f97316); }
+  .risk-bar.Medium   { background: linear-gradient(90deg,#f59e0b,#eab308); }
+  .risk-bar.Low      { background: linear-gradient(90deg,#22c55e,#10b981); }
+
+  .level-badge { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+  .level-badge.Critical { background:rgba(139,92,246,0.1); color:#c4b5fd; border:1px solid rgba(139,92,246,0.2); }
+  .level-badge.High     { background:rgba(239,68,68,0.1);  color:#fca5a5; border:1px solid rgba(239,68,68,0.2); }
+  .level-badge.Medium   { background:rgba(245,158,11,0.1); color:#fcd34d; border:1px solid rgba(245,158,11,0.2); }
+  .level-badge.Low      { background:rgba(34,197,94,0.1);  color:#86efac; border:1px solid rgba(34,197,94,0.2); }
+
+  .rank-num {
+    width: 24px; height: 24px;
+    background: #060B18;
+    border: 1px solid #1a2744;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #334155;
+    font-weight: 600;
+  }
+  .rank-num.top { border-color: #f59e0b; color: #fbbf24; background: rgba(245,158,11,0.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Risk Summary Cards -->
+<div class="risk-stats">
+  <div class="risk-stat critical">
+    <div class="label">Critical Risk</div>
+    <div class="value">{{ critical }}</div>
+  </div>
+  <div class="risk-stat high">
+    <div class="label">High Risk</div>
+    <div class="value">{{ high }}</div>
+  </div>
+  <div class="risk-stat medium">
+    <div class="label">Medium Risk</div>
+    <div class="value">{{ medium }}</div>
+  </div>
+  <div class="risk-stat low">
+    <div class="label">Low Risk</div>
+    <div class="value">{{ low }}</div>
+  </div>
+</div>
+
+<!-- Risk Table -->
+<div class="table-card">
+  <div class="card-header">User Risk Rankings — Top 50 High-Risk Users</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>User</th>
+        <th>Anomaly Count</th>
+        <th>Risk Score</th>
+        <th>Attack Types</th>
+        <th>Risk Level</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in scored_users %}
+      <tr>
+        <td>
+          <span class="rank-num {% if forloop.counter <= 3 %}top{% endif %}">
+            {{ forloop.counter }}
+          </span>
+        </td>
+        <td style="color:#e2e8f0;font-weight:500">{{ u.name }}</td>
+        <td style="color:#38bdf8;font-weight:600">{{ u.count }}</td>
+        <td>
+          <div class="risk-bar-bg">
+            <div class="risk-bar {{ u.level }}"
+                 style="width:{% widthratio u.count scored_users.0.count 100 %}%">
+            </div>
+          </div>
+        </td>
+        <td>{{ u.attack_types }} type{{ u.attack_types|pluralize }}</td>
+        <td><span class="level-badge {{ u.level }}">{{ u.level }}</span></td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" style="text-align:center;padding:40px;color:#334155">
+          No risk data available.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ThreatPulse — Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #020d1a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,200,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,200,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    /* Glowing orbs */
+    body::after {
+      content: '';
+      position: fixed;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,200,150,0.08) 0%, transparent 70%);
+      top: -100px; left: -100px;
+      z-index: 0;
+      animation: orb 8s ease-in-out infinite alternate;
+    }
+    @keyframes orb {
+      from { transform: translate(0,0); }
+      to   { transform: translate(100px, 80px); }
+    }
+
+    .orb2 {
+      position: fixed;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(0,150,255,0.07) 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      z-index: 0;
+      animation: orb2 10s ease-in-out infinite alternate;
+    }
+    @keyframes orb2 {
+      from { transform: translate(0,0); }
+      to   { transform: translate(-80px, -60px); }
+    }
+
+    /* Top nav bar */
+    .topnav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(2,13,26,0.9);
+      border-bottom: 1px solid rgba(0,255,200,0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 40px;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    .topnav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topnav-logo .icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #00c896, #0096ff);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+    .topnav-logo span {
+      font-size: 16px;
+      font-weight: 700;
+      color: #00ffc8;
+      letter-spacing: 0.5px;
+    }
+    .topnav-links {
+      display: flex;
+      gap: 32px;
+      margin-left: 48px;
+    }
+    .topnav-links a {
+      font-size: 13px;
+      color: #4a6080;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .topnav-links a:hover,
+    .topnav-links a.active { color: #00ffc8; }
+
+    /* Feature badges */
+    .feature-strip {
+      position: fixed;
+      bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 32px;
+      z-index: 10;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #334155;
+    }
+    .feature-item .dot {
+      width: 20px; height: 20px;
+      background: rgba(0,255,200,0.1);
+      border: 1px solid rgba(0,255,200,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+    }
+
+    /* Main layout */
+    .page-wrap {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 80px;
+      max-width: 960px;
+      width: 100%;
+      padding: 0 40px;
+    }
+
+    /* Left hero text */
+    .hero {
+      flex: 1;
+    }
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,255,200,0.06);
+      border: 1px solid rgba(0,255,200,0.15);
+      color: #00ffc8;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+    .hero-tag .blink {
+      width: 6px; height: 6px;
+      background: #00ffc8;
+      border-radius: 50%;
+      animation: blink 1.2s infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+    .hero h1 {
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #f1f5f9;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .hero h1 span { color: #00ffc8; }
+    .hero p {
+      font-size: 14px;
+      color: #4a6080;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 24px;
+    }
+    .hero-stat {
+      text-align: left;
+    }
+    .hero-stat .num {
+      font-size: 22px;
+      font-weight: 700;
+      color: #00ffc8;
+    }
+    .hero-stat .lbl {
+      font-size: 11px;
+      color: #334155;
+      margin-top: 2px;
+    }
+
+    /* Login box */
+    .login-box {
+      width: 380px;
+      background: rgba(11,17,32,0.85);
+      border: 1px solid rgba(0,255,200,0.12);
+      border-radius: 18px;
+      padding: 36px 32px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 60px rgba(0,255,200,0.05), 0 20px 60px rgba(0,0,0,0.4);
+      flex-shrink: 0;
+    }
+    .login-box h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+    .login-box .sub {
+      font-size: 12px;
+      color: #334155;
+      margin-bottom: 28px;
+    }
+
+    .form-group { margin-bottom: 18px; position: relative; }
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      color: #4a6080;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 7px;
+      font-weight: 600;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      color: #1e3a5f;
+    }
+    input[type=text], input[type=password] {
+      width: 100%;
+      padding: 11px 14px 11px 38px;
+      background: rgba(2,13,26,0.8);
+      border: 1px solid #1a2744;
+      border-radius: 9px;
+      color: #e2e8f0;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    input:focus {
+      border-color: rgba(0,255,200,0.4);
+      box-shadow: 0 0 0 3px rgba(0,255,200,0.05);
+    }
+
+    .remember-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      font-size: 12px;
+    }
+    .remember-row label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #4a6080;
+      cursor: pointer;
+    }
+    .remember-row input[type=checkbox] {
+      width: 14px; height: 14px;
+      padding: 0;
+      accent-color: #00ffc8;
+    }
+    .remember-row a {
+      color: #00ffc8;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #00c896, #0096ff);
+      color: #020d1a;
+      border: none;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: opacity 0.2s, transform 0.1s;
+      font-family: inherit;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-btn:active { transform: scale(0.99); }
+
+    .error-msg {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #fca5a5;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-bottom: 18px;
+    }
+
+    .login-footer {
+      text-align: center;
+      font-size: 11px;
+      color: #1e3a5f;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #0d1728;
+    }
+    .login-footer span { color: #00ffc8; }
+  </style>
+</head>
+<body>
+  <div class="orb2"></div>
+
+  <!-- Top nav -->
+  <div class="topnav">
+    <div class="topnav-logo">
+      <div class="icon">🛡</div>
+      <span>ThreatPulse</span>
+    </div>
+    <div class="topnav-links">
+      <a href="#" class="active">Home</a>
+      <a href="/login/">Login</a>
+      <a href="/dashboard/">Dashboard</a>
+    </div>
+  </div>
+
+  <!-- Page content -->
+  <div class="page-wrap">
+
+    <!-- Left hero -->
+    <div class="hero">
+      <div class="hero-tag">
+        <span class="blink"></span>
+        REAL-TIME MONITORING
+      </div>
+      <h1>Real-Time <span>Threat Detection</span> System</h1>
+      <p>Monitor, Detect, and Prevent Insider Cyber Attacks.<br/>
+         AI-powered anomaly detection across all network events.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="num">40K+</div>
+          <div class="lbl">Logs Analysed</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">3.9K</div>
+          <div class="lbl">Threats Detected</div>
+        </div>
+        <div class="hero-stat">
+          <div class="num">99.8%</div>
+          <div class="lbl">Accuracy</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login box -->
+    <div class="login-box">
+      <h2>Login</h2>
+      <p class="sub">Authorized personnel only</p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="error-msg">⚠ {{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" action="/login/">
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Username</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" name="username" placeholder="Enter username" required autofocus/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" name="password" placeholder="Enter password" required/>
+          </div>
+        </div>
+        <div class="remember-row">
+          <label>
+            <input type="checkbox"/> Remember Me
+          </label>
+          <a href="#">Forgot Password?</a>
+        </div>
+        <button type="submit" class="login-btn">Login</button>
+      </form>
+
+      <div class="login-footer">
+        Secured by <span>ThreatPulse</span> · AI Threat Detection
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom feature strip -->
+  <div class="feature-strip">
+    <div class="feature-item">
+      <span class="dot">🔍</span> Suspicious Activity Detection
+    </div>
+    <div class="feature-item">
+      <span class="dot">📡</span> Real-Time Alerts & Monitoring
+    </div>
+    <div class="feature-item">
+      <span class="dot">🌐</span> IP Tracking & Analysis
+    </div>
+  </div>
+
+</body>
+</html>

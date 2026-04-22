@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_badge %}LIVE{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block extra_style %}
+<style>
+  /* Simulate button */
+  .sim-btn-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 22px;
+  }
+  .sim-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white; border: none; border-radius: 9px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 0 20px rgba(239,68,68,0.3);
+    transition: opacity 0.2s;
+  }
+  .sim-btn:hover { opacity: 0.85; }
+
+  /* Stat cards */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .card {
+    background: rgba(4,11,22,0.9);
+    border-radius: 14px;
+    padding: 20px 22px;
+    border: 1px solid rgba(0,255,200,0.06);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(0,255,200,0.15); }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+  }
+  .card.blue::before   { background: linear-gradient(90deg,#00c896,#0096ff); }
+  .card.red::before    { background: linear-gradient(90deg,#ef4444,#f97316); }
+  .card.yellow::before { background: linear-gradient(90deg,#f59e0b,#eab308); }
+  .card.green::before  { background: linear-gradient(90deg,#22c55e,#10b981); }
+
+  /* Glow effect on cards */
+  .card.blue  { box-shadow: 0 0 30px rgba(0,200,150,0.04); }
+  .card.red   { box-shadow: 0 0 30px rgba(239,68,68,0.04); }
+  .card.yellow{ box-shadow: 0 0 30px rgba(245,158,11,0.04); }
+  .card.green { box-shadow: 0 0 30px rgba(34,197,94,0.04); }
+
+  .card .label {
+    font-size: 9px;
+    color: #1e3a5f;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+  .card .value {
+    font-size: 34px;
+    font-weight: 700;
+    margin-top: 10px;
+    letter-spacing: -1.5px;
+  }
+  .card.blue .value   { color: #00ffc8; }
+  .card.red .value    { color: #f87171; }
+  .card.yellow .value { color: #fbbf24; }
+  .card.green .value  { color: #34d399; }
+
+  /* Active threat alert cards */
+  .threat-alerts-section { margin-bottom: 24px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .section-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f87171;
+  }
+  .section-header .line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(239,68,68,0.3), transparent);
+  }
+
+  .threat-cards {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 14px;
+  }
+  .threat-card {
+    background: rgba(239,68,68,0.04);
+    border: 1px solid rgba(239,68,68,0.15);
+    border-radius: 12px;
+    padding: 16px 18px;
+    transition: border-color 0.2s;
+  }
+  .threat-card:hover { border-color: rgba(239,68,68,0.3); }
+  .threat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #f87171;
+    margin-bottom: 10px;
+  }
+  .threat-card-title .icon {
+    width: 22px; height: 22px;
+    background: rgba(239,68,68,0.1);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .threat-info { font-size: 11px; color: #4a6080; line-height: 1.8; }
+  .threat-info span { color: #94a3b8; }
+  .threat-status {
+    margin-top: 10px;
+    display: inline-block;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    color: #f87171;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Charts row */
+  .charts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .chart-card {
+    background: rgba(4,11,22,0.9);
+    border-radius: 14px;
+    padding: 18px 22px;
+    border: 1px solid rgba(0,255,200,0.06);
+  }
+  .chart-title {
+    font-size: 9px;
+    color: #1e3a5f;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-title::before {
+    content: '';
+    width: 2px; height: 11px;
+    background: #00ffc8;
+    border-radius: 2px;
+    box-shadow: 0 0 6px #00ffc8;
+  }
+
+  /* IP bars */
+  .ip-row { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .ip-label { font-size:11px; color:#2d4a6b; width:120px; font-family:monospace; }
+  .ip-bar-bg { flex:1; background:#0d1728; border-radius:4px; height:5px; }
+  .ip-bar {
+    background: linear-gradient(90deg,#00c896,#0096ff);
+    height:5px; border-radius:4px;
+    box-shadow: 0 0 6px rgba(0,200,150,0.4);
+  }
+  .ip-count { font-size:11px; color:#1e3a5f; width:28px; text-align:right; }
+
+  /* Activity logs table */
+  .activity-section { margin-bottom: 0; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  thead { background: rgba(0,0,0,0.3); }
+  th {
+    text-align:left;
+    padding:10px 14px;
+    color:#1a2d4a;
+    font-weight:600;
+    font-size:9px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  td { padding:10px 14px; border-bottom:1px solid #050e1f; color:#4a6080; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(0,255,200,0.02); color:#7dd3fc; }
+
+  .badge { padding:2px 9px; border-radius:20px; font-size:10px; font-weight:600; }
+  .badge.High     { background:rgba(239,68,68,0.1);  color:#fca5a5; border:1px solid rgba(239,68,68,0.2); }
+  .badge.Medium   { background:rgba(245,158,11,0.1); color:#fcd34d; border:1px solid rgba(245,158,11,0.2); }
+  .badge.Low      { background:rgba(34,197,94,0.1);  color:#86efac; border:1px solid rgba(34,197,94,0.2); }
+  .badge.Critical { background:rgba(139,92,246,0.1); color:#d8b4fe; border:1px solid rgba(139,92,246,0.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Simulate threat button -->
+<div class="sim-btn-wrap">
+  <form method="POST" action="/trigger-demo-alert/">
+    {% csrf_token %}
+    <button type="submit" class="sim-btn">🚨 Simulate Live Threat</button>
+  </form>
+</div>
+
+<!-- Stat cards -->
+<div class="stats">
+  <div class="card blue">
+    <div class="label">Total Logs</div>
+    <div class="value">{{ total_logs }}</div>
+  </div>
+  <div class="card red">
+    <div class="label">Anomalous Logs</div>
+    <div class="value">{{ anomalous_logs }}</div>
+  </div>
+  <div class="card yellow">
+    <div class="label">Total Alerts</div>
+    <div class="value">{{ total_alerts }}</div>
+  </div>
+  <div class="card green">
+    <div class="label">Unresolved</div>
+    <div class="value">{{ unresolved_alerts }}</div>
+  </div>
+</div>
+
+<!-- Active Threat Alert Cards -->
+<div class="threat-alerts-section">
+  <div class="section-header">
+    <h3>⚡ Active Threat Alerts</h3>
+    <div class="line"></div>
+  </div>
+  <div class="threat-cards">
+    {% for alert in recent_alerts|slice:":3" %}
+    <div class="threat-card">
+      <div class="threat-card-title">
+        <div class="icon">🔴</div>
+        {{ alert.log.attack_type|default:"Unknown Attack" }} Detected
+      </div>
+      <div class="threat-info">
+        IP: <span>{{ alert.log.source_ip }}</span><br/>
+        User: <span>{{ alert.log.user_information|truncatechars:20 }}</span><br/>
+        Time: <span>{{ alert.created_at|timesince }} ago</span>
+      </div>
+      <span class="threat-status">{{ alert.severity|upper }} RISK</span>
+    </div>
+    {% empty %}
+    <div class="threat-card" style="grid-column:span 3; text-align:center; color:#1e3a5f">
+      No active threats at this time
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="charts">
+  <div class="chart-card">
+    <div class="chart-title">Alerts by Severity</div>
+    <canvas id="severityChart" height="200"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Attack Type Breakdown</div>
+    <canvas id="attackChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- Bottom row -->
+<div class="charts">
+  <div class="chart-card">
+    <div class="chart-title">Top Attacking IPs</div>
+    {% if top_ips %}
+      {% with max_count=top_ips.0.count %}
+      {% for ip in top_ips %}
+      <div class="ip-row">
+        <span class="ip-label">{{ ip.source_ip }}</span>
+        <div class="ip-bar-bg">
+          <div class="ip-bar" style="width:{% widthratio ip.count max_count 100 %}%"></div>
+        </div>
+        <span class="ip-count">{{ ip.count }}</span>
+      </div>
+      {% endfor %}
+      {% endwith %}
+    {% endif %}
+  </div>
+
+  <div class="chart-card activity-section">
+    <div class="chart-title">Activity Logs</div>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>IP Address</th>
+          <th>Attack</th>
+          <th>Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for alert in recent_alerts %}
+        <tr>
+          <td style="color:#94a3b8">{{ alert.log.user_information|truncatechars:16|default:"—" }}</td>
+          <td style="font-family:monospace;font-size:11px">{{ alert.log.source_ip }}</td>
+          <td>{{ alert.log.attack_type|default:"—" }}</td>
+          <td>{{ alert.created_at|timesince }} ago</td>
+          <td><span class="badge {{ alert.severity }}">{{ alert.severity }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// Severity chart
+const sevLabels = [{% for s in severity_data %}"{{ s.severity }}",{% endfor %}];
+const sevCounts = [{% for s in severity_data %}{{ s.count }},{% endfor %}];
+new Chart(document.getElementById('severityChart'), {
+  type: 'doughnut',
+  data: {
+    labels: sevLabels,
+    datasets: [{
+      data: sevCounts,
+      backgroundColor: ['rgba(139,92,246,0.8)','rgba(239,68,68,0.8)','rgba(0,200,150,0.8)','rgba(56,189,248,0.8)'],
+      borderColor: ['#7c3aed','#dc2626','#00c896','#0096ff'],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    cutout: '65%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { color:'#2d4a6b', font:{ size:11 }, padding:16, boxWidth:12 }
+      }
+    }
+  }
+});
+
+// Attack chart
+const atkLabels = [{% for a in attack_data %}"{{ a.attack_type }}",{% endfor %}];
+const atkCounts = [{% for a in attack_data %}{{ a.count }},{% endfor %}];
+new Chart(document.getElementById('attackChart'), {
+  type: 'bar',
+  data: {
+    labels: atkLabels,
+    datasets: [{
+      data: atkCounts,
+      backgroundColor: 'rgba(0,200,150,0.15)',
+      borderColor: '#00c896',
+      borderWidth: 1,
+      borderRadius: 6,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    plugins: { legend:{ display:false } },
+    scales: {
+      x: {
+        ticks: { color:'#2d4a6b', font:{ size:10 } },
+        grid: { color:'rgba(0,255,200,0.03)' }
+      },
+      y: {
+        ticks: { color:'#2d4a6b' },
+        grid: { color:'rgba(0,255,200,0.03)' }
+      }
+    }
+  }
+});
+
+// Auto refresh every 30s
+setTimeout(() => location.reload(), 30000);
+</script>
+{% endblock %}

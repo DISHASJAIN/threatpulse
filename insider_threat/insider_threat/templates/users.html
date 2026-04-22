@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block title %}Users{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block page_badge %}ADMIN{% endblock %}
+{% block nav_users %}active{% endblock %}
+
+{% block extra_style %}
+<style>
+  .page-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+  }
+  .table-card {
+    background: #0B1120;
+    border-radius: 14px;
+    border: 1px solid #1a2744;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #1a2744;
+    font-size: 10px;
+    color: #334155;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-header::before {
+    content: '';
+    width: 3px; height: 12px;
+    background: #38bdf8;
+    border-radius: 2px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    padding: 11px 16px;
+    color: #1e3a5f;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    background: #060B18;
+  }
+  td {
+    padding: 13px 16px;
+    border-bottom: 1px solid #0d1728;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.03); }
+
+  .role-admin {
+    background: rgba(139,92,246,0.1);
+    color: #c4b5fd;
+    border: 1px solid rgba(139,92,246,0.2);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .role-analyst {
+    background: rgba(6,182,212,0.1);
+    color: #67e8f9;
+    border: 1px solid rgba(6,182,212,0.2);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .status-active   { color: #34d399; font-size: 12px; font-weight: 500; }
+  .status-inactive { color: #f87171; font-size: 12px; font-weight: 500; }
+
+  .action-btn {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid #1a2744;
+    background: transparent;
+    color: #4a6080;
+    margin-right: 4px;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .action-btn:hover { border-color: #38bdf8; color: #38bdf8; }
+  .btn-delete:hover { border-color: #f87171 !important; color: #f87171 !important; }
+
+  /* Create user form */
+  .form-card {
+    background: #0B1120;
+    border-radius: 14px;
+    border: 1px solid #1a2744;
+    overflow: hidden;
+  }
+  .form-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #1a2744;
+    font-size: 10px;
+    color: #334155;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-card-header::before {
+    content: '';
+    width: 3px; height: 12px;
+    background: #22c55e;
+    border-radius: 2px;
+  }
+  .form-body { padding: 20px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 10px;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 7px;
+    font-weight: 600;
+  }
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px 13px;
+    background: #060B18;
+    border: 1px solid #1a2744;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: inherit;
+  }
+  .form-group input:focus,
+  .form-group select:focus { border-color: #38bdf8; }
+  .form-group select option { background: #0B1120; }
+
+  .submit-btn {
+    width: 100%;
+    padding: 11px;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity 0.15s;
+    font-family: inherit;
+  }
+  .submit-btn:hover { opacity: 0.9; }
+
+  .you-tag {
+    background: rgba(56,189,248,0.08);
+    color: #38bdf8;
+    border: 1px solid rgba(56,189,248,0.15);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-grid">
+
+  <!-- Users Table -->
+  <div class="table-card">
+    <div class="card-header">All Users &nbsp;({{ users|length }})</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td style="color:#e2e8f0;font-weight:500">
+            {{ u.username }}
+            {% if u == user %}<span class="you-tag">You</span>{% endif %}
+          </td>
+          <td>{{ u.email|default:"—" }}</td>
+          <td>
+            {% if u.is_superuser %}
+              <span class="role-admin">Admin</span>
+            {% else %}
+              <span class="role-analyst">Analyst</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.is_active %}
+              <span class="status-active">● Active</span>
+            {% else %}
+              <span class="status-inactive">● Disabled</span>
+            {% endif %}
+          </td>
+          <td>{{ u.date_joined|date:"M d, Y" }}</td>
+          <td>
+            {% if u != user %}
+            <form method="POST" action="/users/" style="display:inline">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="toggle"/>
+              <input type="hidden" name="user_id" value="{{ u.id }}"/>
+              <button type="submit" class="action-btn">
+                {% if u.is_active %}Disable{% else %}Enable{% endif %}
+              </button>
+            </form>
+            <form method="POST" action="/users/" style="display:inline"
+                  onsubmit="return confirm('Delete user {{ u.username }}? This cannot be undone.')">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="delete"/>
+              <input type="hidden" name="user_id" value="{{ u.id }}"/>
+              <button type="submit" class="action-btn btn-delete">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Create User Form -->
+  <div class="form-card">
+    <div class="form-card-header">Create New User</div>
+    <div class="form-body">
+      <form method="POST" action="/users/">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create"/>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="e.g. analyst01" required/>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="user@company.com"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="Strong password" required/>
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select name="role">
+            <option value="analyst">Analyst</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="submit-btn">+ Create User</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+<div class="report-card" style="margin-top: 28px;">
+  <div class="report-card-header">Login Audit Log</div>
+  <div style="overflow-x: auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <thead>
+        <tr style="border-bottom: 1px solid #1a2744;">
+          <th style="padding:10px 16px; color:#334155; text-align:left; font-weight:600;">Time</th>
+          <th style="padding:10px 16px; color:#334155; text-align:left; font-weight:600;">Username</th>
+          <th style="padding:10px 16px; color:#334155; text-align:left; font-weight:600;">IP Address</th>
+          <th style="padding:10px 16px; color:#334155; text-align:left; font-weight:600;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in audit_logs %}
+        <tr style="border-bottom: 1px solid #0d1728;">
+          <td style="padding:10px 16px; color:#64748b;">{{ log.timestamp|date:"M d, H:i" }}</td>
+          <td style="padding:10px 16px; color:#94a3b8;">{{ log.username }}</td>
+          <td style="padding:10px 16px; color:#64748b; font-family:monospace;">{{ log.ip_address }}</td>
+          <td style="padding:10px 16px;">
+            {% if log.success %}
+              <span style="background:rgba(34,197,94,0.1); color:#86efac; border:1px solid rgba(34,197,94,0.2); padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600;">SUCCESS</span>
+            {% else %}
+              <span style="background:rgba(239,68,68,0.1); color:#fca5a5; border:1px solid rgba(239,68,68,0.2); padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600;">FAILED</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="padding:16px; color:#334155; text-align:center;">No login records yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
