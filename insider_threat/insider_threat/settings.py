@@ -144,6 +144,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
+CSRF_TRUSTED_ORIGINS = ['https://threatpulse-production.up.railway.app']
 
 from datetime import timedelta
 
